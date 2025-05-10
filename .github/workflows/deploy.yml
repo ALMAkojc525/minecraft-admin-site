@@ -13,6 +13,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Add EC2 host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 56.228.51.12 >> ~/.ssh/known_hosts
+
       - name: Deploy to EC2 instance
         uses: appleboy/ssh-action@v0.1.10
         with:
