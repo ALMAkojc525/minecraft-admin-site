@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for
+import uuid
 
 app = Flask(__name__)
 
-# Simulirana \"baza podatkov\"
+# Seznam uporabnikov s strukturiranimi slovarji
 users = []
 
 @app.route('/')
@@ -15,14 +16,19 @@ def add_user():
         username = request.form['username']
         name = request.form['name']
         surname = request.form['surname']
-        users.append({'username': username, 'name': name, 'surname': surname})
+        users.append({
+            'id': str(uuid.uuid4()),
+            'username': username,
+            'name': name,
+            'surname': surname
+        })
         return redirect(url_for('index'))
     return render_template('add_user.html')
 
-@app.route('/delete_user/<username>')
-def delete_user(username):
+@app.route('/delete_user/<id>')
+def delete_user(id):
     global users
-    users = [user for user in users if user['username'] != username]
+    users = [user for user in users if user['id'] != id]
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
