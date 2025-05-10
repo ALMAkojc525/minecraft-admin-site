@@ -1,0 +1,25 @@
+name: Deploy Flask App to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to EC2 instance
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: 56.228.51.12
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /var/www/flask-admin
+            git pull origin main
+            sudo systemctl restart apache2
