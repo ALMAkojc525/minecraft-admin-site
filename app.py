@@ -13,8 +13,28 @@ config = {
     'database': 'minecraft_admin'
 }
 
+RCON_HOST = '10.0.2.163'
+RCON_PORTS = [25575, 25576, 25577]
+RCON_PASSWORD = 'SuperRCONpass123'
+RCON_PATH = '/usr/local/bin/mcrcon'  # ali prilagodi na pravo pot (npr. ~/mcrcon/mcrcon)
+
 def get_db_connection():
     return mysql.connector.connect(**config)
+
+def execute_rcon(command):
+    errors = []
+    for port in RCON_PORTS:
+        try:
+            subprocess.run([
+                RCON_PATH,
+                '-H', RCON_HOST,
+                '-P', str(port),
+                '-p', RCON_PASSWORD,
+                command
+            ], check=True)
+        except Exception as e:
+            errors.append(f'Napaka na portu {port}: {str(e)}')
+    return errors
 
 @app.route('/')
 def index():
@@ -41,10 +61,11 @@ def add_user():
             cursor.close()
             conn.close()
 
-            subprocess.run([
-                './mcrcon/mcrcon', '-H', '10.0.2.163', '-P', '25575', '-p', 'SuperRCONpass123', f'whitelist add {username}'
-            ], check=True)
-            flash(f'Uporabnik {username} dodan in whitelist posodobljen.', 'success')
+            errors = execute_rcon(f'whitelist add {username}')
+            if errors:
+                flash('Dodajanje delno uspešno:\n' + '\n'.join(errors), 'danger')
+            else:
+                flash(f'Uporabnik {username} dodan in whitelistan na vseh strežnikih.', 'success')
         except Exception as e:
             flash(f'Napaka pri dodajanju: {str(e)}', 'danger')
 
@@ -62,10 +83,11 @@ def delete_user(username):
         cursor.close()
         conn.close()
 
-        subprocess.run([
-            './mcrcon/mcrcon', '-H', '10.0.2.163', '-P', '25575', '-p', 'SuperRCONpass123', f'whitelist remove {username}'
-        ], check=True)
-        flash(f'Uporabnik {username} odstranjen iz baze in whitelist.', 'success')
+        errors = execute_rcon(f'whitelist remove {username}')
+        if errors:
+            flash('Brisanje delno uspešno:\n' + '\n'.join(errors), 'danger')
+        else:
+            flash(f'Uporabnik {username} odstranjen in izbrisan iz vseh whitelist.', 'success')
     except Exception as e:
         flash(f'Napaka pri brisanju: {str(e)}', 'danger')
 
