@@ -2,11 +2,11 @@
 {% block title %}Minecraft Admin Center{% endblock %}
 
 {% block content %}
-<h1 class="text-primary text-center mb-5">Minecraft Administrative Center</h1>
+<h1 class="heading-main text-center mb-5">Minecraft Administrative Center</h1>
 
 <!-- Server Admins Section -->
 <div class="mb-5">
-  <h3 class="text-dark">👑 Server Admins</h3>
+  <h3 class="heading-sub">👑 Server Admins</h3>
   <a href="{{ url_for('add_admin') }}" class="btn btn-outline-primary mb-3">Add Admin</a>
   <table class="table table-striped">
     <thead>
@@ -29,7 +29,7 @@
 
 <!-- Whitelisted Users Section -->
 <div>
-  <h3 class="text-dark">🎮 Whitelisted Users</h3>
+  <h3 class="heading-sub">🎮 Whitelisted Users</h3>
   <a href="{{ url_for('add_user') }}" class="btn btn-outline-success mb-3">Add User</a>
   <table class="table table-striped">
     <thead>
