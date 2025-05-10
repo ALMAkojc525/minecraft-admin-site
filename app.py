@@ -5,7 +5,6 @@ import subprocess
 app = Flask(__name__)
 app.secret_key = 'zelo-zasebno-geslo'
 
-# DB konfiguracija
 config = {
     'host': 'minecraft2-db.ch6wiqkiysjy.eu-north-1.rds.amazonaws.com',
     'user': 'admin',
@@ -13,37 +12,35 @@ config = {
     'database': 'minecraft_admin'
 }
 
-# RCON nastavitve
-RCON_HOST = '10.0.2.163'
-RCON_PORTS = [25575, 25576, 25577]
-RCON_PASSWORD = 'SuperRCONpass123'
-RCON_PATH = '/home/ubuntu/mcrcon/mcrcon'  # prilagodi če potrebuješ
+rcon_targets = [
+    {'host': '10.0.2.163', 'port': 25575},
+    {'host': '10.0.2.163', 'port': 25576},
+    {'host': '10.0.2.163', 'port': 25577},
+]
+rcon_password = 'SuperRCONpass123'
+mcrcon_path = '/usr/local/bin/mcrcon'
 
 def get_db_connection():
     return mysql.connector.connect(**config)
 
-def execute_rcon(command):
-    errors = []
-    for port in RCON_PORTS:
-        try:
-            subprocess.run([
-                RCON_PATH, '-H', RCON_HOST, '-P', str(port), '-p', RCON_PASSWORD, command
-            ], check=True)
-        except Exception as e:
-            errors.append(f'Port {port} error: {str(e)}')
-    return errors
+def rcon_command(command):
+    for target in rcon_targets:
+        subprocess.run([
+            mcrcon_path,
+            '-H', target['host'],
+            '-P', str(target['port']),
+            '-p', rcon_password,
+            command
+        ], stdout=subprocess.DEVNULL)
 
 @app.route('/')
 def index():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-
     cursor.execute('SELECT * FROM users')
     users = cursor.fetchall()
-
     cursor.execute('SELECT * FROM admins')
     admins = cursor.fetchall()
-
     cursor.close()
     conn.close()
     return render_template('index.html', users=users, admins=admins)
@@ -61,14 +58,10 @@ def add_user():
             conn.commit()
             cursor.close()
             conn.close()
-
-            errors = execute_rcon(f'whitelist add {username}')
-            if errors:
-                flash('Partial whitelist success:\n' + '\n'.join(errors), 'warning')
-            else:
-                flash(f'User {username} added and whitelisted.', 'success')
+            rcon_command(f'whitelist add {username}')
+            flash(f'{username} added to whitelist.', 'success')
         except Exception as e:
-            flash(f'Error: {str(e)}', 'danger')
+            flash(f'Error adding user: {e}', 'danger')
         return redirect(url_for('index'))
     return render_template('add_user.html')
 
@@ -81,35 +74,29 @@ def delete_user(username):
         conn.commit()
         cursor.close()
         conn.close()
-
-        errors = execute_rcon(f'whitelist remove {username}')
-        if errors:
-            flash('Partial de-whitelist success:\n' + '\n'.join(errors), 'warning')
-        else:
-            flash(f'User {username} removed.', 'success')
+        rcon_command(f'whitelist remove {username}')
+        flash(f'{username} removed from whitelist.', 'success')
     except Exception as e:
-        flash(f'Error: {str(e)}', 'danger')
+        flash(f'Error removing user: {e}', 'danger')
     return redirect(url_for('index'))
 
-@app.route('/add_admin', methods=['POST'])
+@app.route('/add_admin', methods=['GET', 'POST'])
 def add_admin():
-    username = request.form['admin_username']
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('INSERT INTO admins (username) VALUES (%s)', (username,))
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-        errors = execute_rcon(f'op {username}')
-        if errors:
-            flash('Partial op success:\n' + '\n'.join(errors), 'warning')
-        else:
-            flash(f'Admin {username} added and opped.', 'success')
-    except Exception as e:
-        flash(f'Error: {str(e)}', 'danger')
-    return redirect(url_for('index'))
+    if request.method == 'POST':
+        username = request.form['username']
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute('INSERT INTO admins (username) VALUES (%s)', (username,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            rcon_command(f'op {username}')
+            flash(f'{username} added as admin.', 'success')
+        except Exception as e:
+            flash(f'Error adding admin: {e}', 'danger')
+        return redirect(url_for('index'))
+    return render_template('add_admin.html')
 
 @app.route('/delete_admin/<username>')
 def delete_admin(username):
@@ -120,14 +107,10 @@ def delete_admin(username):
         conn.commit()
         cursor.close()
         conn.close()
-
-        errors = execute_rcon(f'deop {username}')
-        if errors:
-            flash('Partial deop success:\n' + '\n'.join(errors), 'warning')
-        else:
-            flash(f'Admin {username} deopped and removed.', 'success')
+        rcon_command(f'deop {username}')
+        flash(f'{username} removed as admin.', 'success')
     except Exception as e:
-        flash(f'Error: {str(e)}', 'danger')
+        flash(f'Error removing admin: {e}', 'danger')
     return redirect(url_for('index'))
 
 if __name__ == '__main__':

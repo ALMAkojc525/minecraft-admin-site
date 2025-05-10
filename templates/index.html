@@ -2,42 +2,51 @@
 {% block title %}Minecraft Admin Center{% endblock %}
 
 {% block content %}
-<h1 class="text-primary text-center">Minecraft administrative center</h1>
+<h1 class="text-primary text-center mb-5">Minecraft Administrative Center</h1>
 
-<!-- Admins -->
-<h3>Server Admins</h3>
-<form method="post" action="{{ url_for('add_admin') }}">
-  <input type="text" name="admin_username" placeholder="Minecraft username" required>
-  <button class="button">Add admin</button>
-</form>
-<table>
-  <tr><th>Username</th><th>Action</th></tr>
-  {% for admin in admins %}
-    <tr>
-      <td>{{ admin.username }}</td>
-      <td>
-        <a href="{{ url_for('delete_admin', username=admin.username) }}" class="delete" title="Remove admin">🗑️</a>
-      </td>
-    </tr>
-  {% endfor %}
-</table>
+<!-- Server Admins Section -->
+<div class="mb-5">
+  <h3 class="text-dark">👑 Server Admins</h3>
+  <a href="{{ url_for('add_admin') }}" class="btn btn-outline-primary mb-3">Add Admin</a>
+  <table class="table table-striped">
+    <thead>
+      <tr><th>Username</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      {% for admin in admins %}
+        <tr>
+          <td>{{ admin.username }}</td>
+          <td>
+            <a href="{{ url_for('delete_admin', username=admin.username) }}" class="btn btn-sm btn-danger">Remove</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 
-<hr>
+<hr class="my-4">
 
-<!-- Users -->
-<h3>Whitelisted Users</h3>
-<a href="{{ url_for('add_user') }}" class="button">Add user</a>
-<table>
-  <tr><th>Username</th><th>Name</th><th>Surname</th><th>Action</th></tr>
-  {% for user in users %}
-    <tr>
-      <td>{{ user.username }}</td>
-      <td>{{ user.name }}</td>
-      <td>{{ user.surname }}</td>
-      <td>
-        <a href="{{ url_for('delete_user', username=user.username) }}" class="delete" title="Remove">🗑️</a>
-      </td>
-    </tr>
-  {% endfor %}
-</table>
+<!-- Whitelisted Users Section -->
+<div>
+  <h3 class="text-dark">🎮 Whitelisted Users</h3>
+  <a href="{{ url_for('add_user') }}" class="btn btn-outline-success mb-3">Add User</a>
+  <table class="table table-striped">
+    <thead>
+      <tr><th>Username</th><th>Name</th><th>Surname</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+        <tr>
+          <td>{{ user.username }}</td>
+          <td>{{ user.name }}</td>
+          <td>{{ user.surname }}</td>
+          <td>
+            <a href="{{ url_for('delete_user', username=user.username) }}" class="btn btn-sm btn-danger">Remove</a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}
