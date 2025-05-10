@@ -11,10 +11,13 @@ body {
 .container {
     width: 900px;
     margin: auto;
-    background: white;
     padding: 30px;
     border-radius: 12px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    background: rgba(255, 255, 255, 0.7); /* prosojna bela */
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 h1 {
@@ -74,4 +77,10 @@ input[type=text] {
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
+}
+
+hr.section-divider {
+    border: none;
+    border-top: 3px solid rgba(255, 255, 255, 0.6);
+    margin: 40px 0;
 }
