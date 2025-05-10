@@ -1,12 +1,25 @@
 from flask import Flask, render_template, request, redirect, url_for
+import mysql.connector
 
 app = Flask(__name__)
 
-# Simulirana \"baza podatkov\"
-users = []
+DB_CONFIG = {
+    'host': 'minecraft2-db.ch6wiqkiysjy.eu-north-1.rds.amazonaws.com',
+    'user': 'admin',
+    'password': 'Sup3rSecret!',
+    'database': 'minecraft_admin'
+}
+
+def get_connection():
+    return mysql.connector.connect(**DB_CONFIG)
 
 @app.route('/')
 def index():
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users")
+    users = cursor.fetchall()
+    conn.close()
     return render_template('index.html', users=users)
 
 @app.route('/add_user', methods=['GET', 'POST'])
@@ -15,14 +28,24 @@ def add_user():
         username = request.form['username']
         name = request.form['name']
         surname = request.form['surname']
-        users.append({'username': username, 'name': name, 'surname': surname})
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO users (username, name, surname) VALUES (%s, %s, %s)",
+            (username, name, surname)
+        )
+        conn.commit()
+        conn.close()
         return redirect(url_for('index'))
     return render_template('add_user.html')
 
 @app.route('/delete_user/<username>')
 def delete_user(username):
-    global users
-    users = [user for user in users if user['username'] != username]
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM users WHERE username = %s", (username,))
+    conn.commit()
+    conn.close()
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
