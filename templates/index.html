@@ -2,12 +2,24 @@
 {% block title %}Minecraft Admin Center{% endblock %}
 
 {% block content %}
+<!--
+  --------------------------------------------------------------
+  Osrednja nadzorna plošča.
+  Prikazuje:
+    • seznam administratorjev (admins)
+    • seznam whitelistanih igralcev (users)
+  --------------------------------------------------------------
+-->
+
 <h1 class="heading-main text-center mb-5">Minecraft Administrative Center</h1>
 
-<!-- Server Admins Section -->
+<!-- ====================== SERVER ADMINS ====================== -->
 <div class="mb-5">
   <h3 class="heading-sub">👑 Server Admins</h3>
+
+  <!-- Gumb za dodajanje admina preusmeri na /add_admin  -->
   <a href="{{ url_for('add_admin') }}" class="btn btn-outline-primary mb-3">Add Admin</a>
+
   <table class="table table-striped">
     <thead>
       <tr><th>Username</th><th>Action</th></tr>
@@ -17,6 +29,7 @@
         <tr>
           <td>{{ admin.username }}</td>
           <td>
+            <!-- Odstrani admina (pokliče /delete_admin/<username>) -->
             <a href="{{ url_for('delete_admin', username=admin.username) }}" class="btn btn-sm btn-danger">Remove</a>
           </td>
         </tr>
@@ -25,12 +38,15 @@
   </table>
 </div>
 
-<hr class="section-divider">
+<hr class="section-divider"><!-- vizualna črta med sekcijama -->
 
-<!-- Whitelisted Users Section -->
+<!-- ==================== WHITELISTED USERS ==================== -->
 <div>
   <h3 class="heading-sub">🎮 Whitelisted Users</h3>
+
+  <!-- Gumb za dodajanje uporabnika -->
   <a href="{{ url_for('add_user') }}" class="btn btn-outline-success mb-3">Add User</a>
+
   <table class="table table-striped">
     <thead>
       <tr><th>Username</th><th>Name</th><th>Surname</th><th>Action</th></tr>
@@ -42,6 +58,7 @@
           <td>{{ user.name }}</td>
           <td>{{ user.surname }}</td>
           <td>
+            <!-- Odstrani userja (pokliče /delete_user/<username>) -->
             <a href="{{ url_for('delete_user', username=user.username) }}" class="btn btn-sm btn-danger">Remove</a>
           </td>
         </tr>
